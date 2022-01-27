@@ -4,8 +4,13 @@
  */
 package Coding;
 
+import java.awt.image.BufferedImage;
 import java.io.File;
+import java.io.IOException;
+import javax.imageio.ImageIO;
+import javax.swing.ImageIcon;
 import javax.swing.JFileChooser;
+import javax.swing.JOptionPane;
 import javax.swing.filechooser.FileFilter;
 
 /**
@@ -14,9 +19,9 @@ import javax.swing.filechooser.FileFilter;
  */
 public class Encode_Frame extends javax.swing.JFrame {
 
-    /**
-     * Creates new form Encode_Frame
-     */
+   BufferedImage sourceImage = null, EmbeddedImage = null;  
+   
+   
     public Encode_Frame() {
         initComponents();
     }
@@ -31,6 +36,8 @@ public class Encode_Frame extends javax.swing.JFrame {
     private void initComponents() {
 
         jPanel1 = new javax.swing.JPanel();
+        jScrollPane1 = new javax.swing.JScrollPane();
+        jTextMessage = new javax.swing.JTextArea();
         jPanel2 = new javax.swing.JPanel();
         jLabelSourceimage = new javax.swing.JLabel();
         jPanel3 = new javax.swing.JPanel();
@@ -44,15 +51,21 @@ public class Encode_Frame extends javax.swing.JFrame {
 
         jPanel1.setBorder(javax.swing.BorderFactory.createTitledBorder("Messege"));
 
+        jTextMessage.setColumns(20);
+        jTextMessage.setRows(5);
+        jScrollPane1.setViewportView(jTextMessage);
+
         javax.swing.GroupLayout jPanel1Layout = new javax.swing.GroupLayout(jPanel1);
         jPanel1.setLayout(jPanel1Layout);
         jPanel1Layout.setHorizontalGroup(
             jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 0, Short.MAX_VALUE)
+            .addComponent(jScrollPane1)
         );
         jPanel1Layout.setVerticalGroup(
             jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 296, Short.MAX_VALUE)
+            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel1Layout.createSequentialGroup()
+                .addGap(0, 0, Short.MAX_VALUE)
+                .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 324, javax.swing.GroupLayout.PREFERRED_SIZE))
         );
 
         jPanel2.setBorder(javax.swing.BorderFactory.createTitledBorder(javax.swing.BorderFactory.createTitledBorder("Messege"), "Sourceimage"));
@@ -92,6 +105,11 @@ public class Encode_Frame extends javax.swing.JFrame {
         );
 
         jButtonEmbed.setText("Embed");
+        jButtonEmbed.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jButtonEmbedActionPerformed(evt);
+            }
+        });
 
         jButtonSave.setText("Save");
         jButtonSave.addActionListener(new java.awt.event.ActionListener() {
@@ -151,13 +169,12 @@ public class Encode_Frame extends javax.swing.JFrame {
                         .addComponent(jButtonSave, javax.swing.GroupLayout.PREFERRED_SIZE, 42, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addComponent(jButtonReset, javax.swing.GroupLayout.PREFERRED_SIZE, 42, javax.swing.GroupLayout.PREFERRED_SIZE))
                     .addComponent(jButtonOpen, javax.swing.GroupLayout.PREFERRED_SIZE, 38, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addContainerGap(34, Short.MAX_VALUE))
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
 
         pack();
     }// </editor-fold>//GEN-END:initComponents
 private File showFileDialog(final boolean open){
-    System.out.println("Hi from showFileDialog");
            JFileChooser fc = new JFileChooser("open an image");
            FileFilter filefilter = new FileFilter(){
                @Override
@@ -202,9 +219,121 @@ private File showFileDialog(final boolean open){
     }//GEN-LAST:event_jButtonSaveActionPerformed
 
     private void jButtonOpenActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButtonOpenActionPerformed
-           File file = showFileDialog(true);
+        File file = showFileDialog(true);
+        if(file == null) {
+            return;
+         
+        }
+           
+       try {
+           sourceImage = ImageIO.read(file);
+           System.out.println("comes here before setIcon?");
+           jLabelSourceimage.setIcon(new ImageIcon(sourceImage));
+           System.out.println("comes here?");
+           this.validate();
+           System.out.println("comes here?");
+           
+           
+       } catch (IOException ex) {
+           
+       }
+  
     }//GEN-LAST:event_jButtonOpenActionPerformed
 
+    private void jButtonEmbedActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButtonEmbedActionPerformed
+      if(jTextMessage.equals("") || sourceImage == null){
+          JOptionPane.showMessageDialog(this, "No message has been embedded",
+                  "No Picture or Message Found", JOptionPane.ERROR_MESSAGE);
+          return;
+          
+          
+      }
+      String Message = jTextMessage.getText();
+      EmbeddedImage = sourceImage.getSubimage(0, 0, 
+              sourceImage.getWidth(),sourceImage.getHeight());
+      embeddedMessage(EmbeddedImage, Message);
+      
+      jLabelEmbedded.setIcon(new ImageIcon(EmbeddedImage));
+      this.validate();
+     
+    }//GEN-LAST:event_jButtonEmbedActionPerformed
+   
+  private void embeddedMessage(BufferedImage img, String mess){
+      int messageLength = mess.length();
+      int imageWidth = img.getWidth(), imageHeight = img.getHeight(),
+              imageSize = imageWidth * imageHeight;
+      
+      
+      if(messageLength * 8 + 32 > imageSize){
+          JOptionPane.showMessageDialog(this,"Message is too long for this Image",
+                  "Message Too Long!", JOptionPane.ERROR_MESSAGE);
+          
+          return;
+      }
+      else{
+          embedInteger(img, messageLength, 0, 0);
+          byte b[] = mess.getBytes();
+          for(int i=0; i<b.length; i++)
+              embedByte(img, b[i], i*8+32, 0);
+          
+          
+      }
+      
+  }
+  
+  
+    private void embedInteger(BufferedImage img, int n, int start, int storageBit){
+     int maxX = img.getWidth(), maxY = img.getHeight(),
+        startX = start/maxY, startY = start - startX*maxY, count = 0;
+      
+       for(int i =startX; i<maxX && count < 32; i++){
+           for(int j=startY; j<maxY && count<32; j++){
+               int rgb = img.getRGB(i, j), bit = getBitvalue(n, count);
+               rgb = setBitValue(rgb, storageBit, bit);
+               img.setRGB(i, j, rgb);
+               count++;
+               
+           }
+       }
+     
+    }
+    
+          private void embedByte(BufferedImage img, byte b, int start, int storageBit) {
+            int maxX = img.getWidth(), maxY = img.getHeight(),
+                    startX = start/maxY, startY = start - startX*maxY, count=0;
+                for(int i = startX; i<maxX && count <8; i++){
+                    for(int j = startY; j<maxX && count <8; j++){
+                        int rgb = img.getRGB(i, j), bit = getBitvalue(b, count);
+                        rgb = setBitValue(rgb,storageBit, bit);
+                        img.setRGB(i, j, rgb);
+                        count++;
+                        
+                    }
+                }           
+        }
+             
+    
+       private int getBitvalue(int n, int location) {
+           int v = (int) (n & Math.round(Math.pow(2, location)));
+           return v == 0?0:1;
+           
+       }
+       
+            
+       private int setBitValue(int n, int location, int bit){
+           int toggle = (int) Math.pow(2, location),  bv = getBitvalue(n, location);
+           if(bv == bit)
+               return n;
+           if(bv == 0 && bit ==1)
+               n |= toggle;
+           else if(bv == 1 && bit == 0)
+               n ^= toggle;
+           return n;
+           
+           
+           
+       }
+    
     /**
      * @param args the command line arguments
      */
@@ -250,5 +379,8 @@ private File showFileDialog(final boolean open){
     private javax.swing.JPanel jPanel1;
     private javax.swing.JPanel jPanel2;
     private javax.swing.JPanel jPanel3;
+    private javax.swing.JScrollPane jScrollPane1;
+    private javax.swing.JTextArea jTextMessage;
     // End of variables declaration//GEN-END:variables
+
 }
