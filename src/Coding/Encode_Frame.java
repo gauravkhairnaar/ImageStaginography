@@ -1,4 +1,4 @@
-/*
+ /*
  * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
  * Click nbfs://nbhost/SystemFileSystem/Templates/GUIForms/JFrame.java to edit this template
  */
@@ -7,6 +7,8 @@ package Coding;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.imageio.ImageIO;
 import javax.swing.ImageIcon;
 import javax.swing.JFileChooser;
@@ -20,6 +22,7 @@ import javax.swing.filechooser.FileFilter;
 public class Encode_Frame extends javax.swing.JFrame {
 
    BufferedImage sourceImage = null, EmbeddedImage = null;  
+    private File file;
    
    
     public Encode_Frame() {
@@ -52,6 +55,7 @@ public class Encode_Frame extends javax.swing.JFrame {
         jPanel1.setBorder(javax.swing.BorderFactory.createTitledBorder("Messege"));
 
         jTextMessage.setColumns(20);
+        jTextMessage.setFont(new java.awt.Font("Ubuntu", 1, 18)); // NOI18N
         jTextMessage.setRows(5);
         jScrollPane1.setViewportView(jTextMessage);
 
@@ -160,8 +164,8 @@ public class Encode_Frame extends javax.swing.JFrame {
                 .addComponent(jPanel1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                    .addComponent(jPanel2, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addComponent(jPanel3, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                    .addComponent(jPanel3, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(jPanel2, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                 .addGap(18, 18, 18)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
@@ -174,7 +178,8 @@ public class Encode_Frame extends javax.swing.JFrame {
 
         pack();
     }// </editor-fold>//GEN-END:initComponents
-private File showFileDialog(final boolean open){
+
+    private File showFileDialog(final boolean open){
            JFileChooser fc = new JFileChooser("open an image");
            FileFilter filefilter = new FileFilter(){
                @Override
@@ -201,7 +206,7 @@ private File showFileDialog(final boolean open){
            
                    
            File file = null;
-           if(open && fc.showOpenDialog(this)== fc.APPROVE_OPTION)
+            if(fc.showOpenDialog(this)== JFileChooser.APPROVE_OPTION && open)
                file = fc.getSelectedFile();
            else if(!open && fc.showSaveDialog(this)== fc.APPROVE_OPTION)
                file = fc.getSelectedFile();
@@ -210,18 +215,50 @@ private File showFileDialog(final boolean open){
                
            
        }
+    
     private void jButtonResetActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButtonResetActionPerformed
-       
+            jTextMessage.setText(""); 
+            sourceImage = null;
+            EmbeddedImage = null;
+            jLabelSourceimage.setIcon(null);
+            jLabelEmbedded.setIcon(null);
+            
     }//GEN-LAST:event_jButtonResetActionPerformed
 
     private void jButtonSaveActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButtonSaveActionPerformed
-        // TODO add your handling code here:
+        if(EmbeddedImage == null){
+         JOptionPane.showMessageDialog(this,"No message has been embedded","Nothing to save",JOptionPane.ERROR_MESSAGE);
+        }
+        else{
+            File file = showFileDialog(false); // if value is true then u will see open instead of save
+            if (file == null)
+                return;
+
+        String name = file.getName();
+       String Extention = name.substring(name.lastIndexOf(",")+1).toLowerCase();
+       
+      if(!Extention.equals("png") && !Extention.equals("bmp")){
+          Extention = "png";
+         file = new File(file.getAbsolutePath()+".png"); 
+      }
+      if(file.exists()) file.delete();
+            try {
+                ImageIO.write(EmbeddedImage, Extention.toUpperCase(), file);
+            } catch (IOException ex) {
+                Logger.getLogger(Encode_Frame.class.getName()).log(Level.SEVERE, null, ex);
+            }
+      
+      
+      
+        }
+        
+        
     }//GEN-LAST:event_jButtonSaveActionPerformed
 
     private void jButtonOpenActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButtonOpenActionPerformed
         File file = showFileDialog(true);
         if(file == null) {
-            return;
+            return; 
          
         }
            
@@ -258,7 +295,7 @@ private File showFileDialog(final boolean open){
      
     }//GEN-LAST:event_jButtonEmbedActionPerformed
    
-  private void embeddedMessage(BufferedImage img, String mess){
+    private void embeddedMessage(BufferedImage img, String mess){
       int messageLength = mess.length();
       int imageWidth = img.getWidth(), imageHeight = img.getHeight(),
               imageSize = imageWidth * imageHeight;
@@ -287,7 +324,7 @@ private File showFileDialog(final boolean open){
         startX = start/maxY, startY = start - startX*maxY, count = 0;
       
        for(int i =startX; i<maxX && count < 32; i++){
-           for(int j=startY; j<maxY && count<32; j++){
+           for(int j=startY; j<maxY && count<32; j++){ 
                int rgb = img.getRGB(i, j), bit = getBitvalue(n, count);
                rgb = setBitValue(rgb, storageBit, bit);
                img.setRGB(i, j, rgb);
@@ -298,7 +335,7 @@ private File showFileDialog(final boolean open){
      
     }
     
-          private void embedByte(BufferedImage img, byte b, int start, int storageBit) {
+    private void embedByte(BufferedImage img, byte b, int start, int storageBit) {
             int maxX = img.getWidth(), maxY = img.getHeight(),
                     startX = start/maxY, startY = start - startX*maxY, count=0;
                 for(int i = startX; i<maxX && count <8; i++){
@@ -313,14 +350,14 @@ private File showFileDialog(final boolean open){
         }
              
     
-       private int getBitvalue(int n, int location) {
+    private int getBitvalue(int n, int location) {
            int v = (int) (n & Math.round(Math.pow(2, location)));
            return v == 0?0:1;
            
        }
        
             
-       private int setBitValue(int n, int location, int bit){
+    private int setBitValue(int n, int location, int bit){
            int toggle = (int) Math.pow(2, location),  bv = getBitvalue(n, location);
            if(bv == bit)
                return n;
@@ -329,9 +366,6 @@ private File showFileDialog(final boolean open){
            else if(bv == 1 && bit == 0)
                n ^= toggle;
            return n;
-           
-           
-           
        }
     
     /**
