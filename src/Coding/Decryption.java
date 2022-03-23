@@ -7,6 +7,7 @@ package Coding;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
+import javax.crypto.BadPaddingException;
 import javax.imageio.ImageIO;
 import javax.swing.ImageIcon;
 import javax.swing.JFileChooser;
@@ -35,6 +36,8 @@ public class Decryption extends javax.swing.JFrame {
 
         jPanel1 = new javax.swing.JPanel();
         jLabelImage = new javax.swing.JLabel();
+        jScrollPane2 = new javax.swing.JScrollPane();
+        jTextMessage1 = new javax.swing.JTextArea();
         jPanel2 = new javax.swing.JPanel();
         jScrollPane1 = new javax.swing.JScrollPane();
         jTextMessage = new javax.swing.JTextArea();
@@ -48,15 +51,26 @@ public class Decryption extends javax.swing.JFrame {
 
         jLabelImage.setText("jLabel1");
 
+        jTextMessage1.setColumns(20);
+        jTextMessage1.setFont(new java.awt.Font("Ubuntu", 1, 18)); // NOI18N
+        jTextMessage1.setRows(5);
+        jTextMessage1.setBorder(javax.swing.BorderFactory.createTitledBorder("Password"));
+        jScrollPane2.setViewportView(jTextMessage1);
+
         javax.swing.GroupLayout jPanel1Layout = new javax.swing.GroupLayout(jPanel1);
         jPanel1.setLayout(jPanel1Layout);
         jPanel1Layout.setHorizontalGroup(
             jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(jLabelImage, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+            .addGroup(jPanel1Layout.createSequentialGroup()
+                .addComponent(jLabelImage, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addGap(18, 18, 18)
+                .addComponent(jScrollPane2, javax.swing.GroupLayout.PREFERRED_SIZE, 372, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addContainerGap())
         );
         jPanel1Layout.setVerticalGroup(
             jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(jLabelImage, javax.swing.GroupLayout.DEFAULT_SIZE, 209, Short.MAX_VALUE)
+            .addComponent(jLabelImage, javax.swing.GroupLayout.DEFAULT_SIZE, 223, Short.MAX_VALUE)
+            .addComponent(jScrollPane2, javax.swing.GroupLayout.DEFAULT_SIZE, 223, Short.MAX_VALUE)
         );
 
         jTextMessage.setColumns(20);
@@ -68,14 +82,14 @@ public class Decryption extends javax.swing.JFrame {
         jPanel2.setLayout(jPanel2Layout);
         jPanel2Layout.setHorizontalGroup(
             jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(jScrollPane1)
+            .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 697, Short.MAX_VALUE)
         );
         jPanel2Layout.setVerticalGroup(
             jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(jPanel2Layout.createSequentialGroup()
                 .addContainerGap()
                 .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 223, Short.MAX_VALUE)
-                .addContainerGap())
+                .addGap(235, 235, 235))
         );
 
         jButtonOpen.setText("Open");
@@ -103,7 +117,6 @@ public class Decryption extends javax.swing.JFrame {
         getContentPane().setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(jPanel2, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
             .addGroup(layout.createSequentialGroup()
                 .addGap(129, 129, 129)
                 .addComponent(jButtonOpen, javax.swing.GroupLayout.PREFERRED_SIZE, 92, javax.swing.GroupLayout.PREFERRED_SIZE)
@@ -113,6 +126,10 @@ public class Decryption extends javax.swing.JFrame {
                 .addComponent(jButtonReset, javax.swing.GroupLayout.PREFERRED_SIZE, 82, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addContainerGap(209, Short.MAX_VALUE))
             .addComponent(jPanel1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+            .addGroup(layout.createSequentialGroup()
+                .addContainerGap()
+                .addComponent(jPanel2, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addContainerGap())
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -124,9 +141,9 @@ public class Decryption extends javax.swing.JFrame {
                     .addComponent(jButtonDecode, javax.swing.GroupLayout.PREFERRED_SIZE, 38, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addGap(21, 21, 21)
                 .addComponent(jPanel1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                 .addComponent(jPanel2, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(32, Short.MAX_VALUE))
+                .addContainerGap())
         );
 
         pack();
@@ -178,11 +195,11 @@ private File showFileDialog(final boolean open){
            
        try {
            Image = ImageIO.read(file);
-           System.out.println("comes here before setIcon?");
+           
            jLabelImage.setIcon(new ImageIcon(Image));
-           System.out.println("comes here?");
+           
            this.validate();
-           System.out.println("comes here?");
+           
            
            
        } catch (IOException ex) {
@@ -198,12 +215,28 @@ private File showFileDialog(final boolean open){
         if (Image == null){
             JOptionPane.showMessageDialog(this, "First Open a Image");
              return;
+        } 
+        if (jTextMessage1.getText().length()== 0){
+            JOptionPane.showMessageDialog(this, "Please enter the password");
+             return;
         }
+        String Password = jTextMessage1.getText();
+        System.out.println("Password is" + Password);
         int len = extractInteger(Image, 0, 0);
         byte b[] = new byte[len];
         for(int i = 0; i<len; i++)
             b[i] = extractByte(Image, i*8+32, 0);
-        jTextMessage.setText(new String(b)); 
+        String Message = new String(b);
+        String decryptedMessage = "";
+        try {
+             decryptedMessage = AES.decrypt(Message, Password);
+        }catch (BadPaddingException bpe){
+            JOptionPane.showMessageDialog(this, "Incorrect Password!!");
+        }catch (Exception e) {
+            JOptionPane.showMessageDialog(this, "Error in Descryption");
+        }
+         
+        jTextMessage.setText(decryptedMessage); 
         
     }//GEN-LAST:event_jButtonDecodeActionPerformed
 
@@ -314,6 +347,8 @@ private File showFileDialog(final boolean open){
     private javax.swing.JPanel jPanel1;
     private javax.swing.JPanel jPanel2;
     private javax.swing.JScrollPane jScrollPane1;
+    private javax.swing.JScrollPane jScrollPane2;
     private javax.swing.JTextArea jTextMessage;
+    private javax.swing.JTextArea jTextMessage1;
     // End of variables declaration//GEN-END:variables
 }
